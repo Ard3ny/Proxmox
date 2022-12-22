@@ -1,0 +1,12 @@
+Whitelisting tldr
+----------------------------------------------------
+
+Mailproxy -> Whitelist will whitelist senders that would otherwise already get blocked on SMTP level (e.g. missing From: field, RBL list entries etc.)
+The Who object -> Whitelist entry will whitelist senders that would e.g. get knocked out by spamassassin/clamav/configured rules etc.
+And lastly, there is a third one. Administration -> User -> Whitelist which is a per user whitelist
+
+
+Below should be the white/blacklist oder.
+Mail Filter> Who Objects ...
+Administration> User ...
+Configuration> Mail Proxy ...
