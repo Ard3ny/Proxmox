@@ -1,0 +1,10 @@
+Create shell script
+
+#/bin/bash
+
+now=$(date)
+pvesh get /cluster/resources --type vm > report.txt
+echo "Resource report $now" | s-nail -v -r "report@test.com" -s "Proxmox VM resource report" -S smtp="mail.test.com:587" -S smtp-auth=login -S smtp-auth-user=report@thiss.tech -S smtp-auth-password=ReKaLaMa158* -S ssl-verify=ignore -S smtp-use-starttls -a "/root/VMScripts/report.txt" reciever@test.com
+
+//And add it to crontab
+5 8 * * 1 /root/VMScripts/vm_resource_report.sh

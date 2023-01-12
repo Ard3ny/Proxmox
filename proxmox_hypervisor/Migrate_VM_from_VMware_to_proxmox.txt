@@ -1,0 +1,24 @@
+napr 
+https://edywerder.ch/vmware-to-proxmox/
+
+
+-Backup everthing
+-Create VM v proxmoxe GUI
+-Stop vmware VM
+
+-import disk on proxmox node
+qm importdisk 188 /mnt/esxi/srva-loadbalance1/srva-loadbalance1.vmdk storage01-vol004-format raw
+
+You should see now unmounted disk on proxmox empty VM
+-Check the box in GUI to mount it and change it to SCI and the boot priority if necesarry
+-Start VM
+
+-download virtio iso driver and attach them and install
+download here
+https://pve.proxmox.com/wiki/Windows_VirtIO_Drivers#Downloading_the_Wizard_in_the_VM
+
+-Shutdown VM
+
+-Map SCZI disks now (we couldnt do it before we had virtio drivers)
+-Fix boot order if necesarry
+-Start proxmox VM

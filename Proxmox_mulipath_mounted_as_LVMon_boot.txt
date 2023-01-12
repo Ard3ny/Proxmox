@@ -1,0 +1,49 @@
+Proxmox mulipath mounted as LVM on boot
+
+  WARNING: Not using device /dev/mapper/mpatha for PV US2oly-6CyC-DAyy-pB92-mffI-3ZEU-Oxws1A.
+  WARNING: PV US2oly-6CyC-DAyy-pB92-mffI-3ZEU-Oxws1A prefers device /dev/sdb because device is used by LV.
+  WARNING: Not using device /dev/mapper/mpatha for PV US2oly-6CyC-DAyy-pB92-mffI-3ZEU-Oxws1A.
+  WARNING: PV US2oly-6CyC-DAyy-pB92-mffI-3ZEU-Oxws1A prefers device /dev/sdb because device is used by LV.
+TASK ERROR: can't activate LV '/dev/csm-storage01-vol01/vm-106-disk-0':   Cannot activate LVs in VG csm-storage01-vol01 while PVs appear on duplicate devices.
+
+#Check which disks are multipath and which are for proxmox boot
+root@test01:~# lsblk
+NAME                                       MAJ:MIN RM   SIZE RO TYPE  MOUNTPOINT
+sda                                          8:0    0 556.9G  0 disk  
+├─sda1                                       8:1    0  1007K  0 part  
+├─sda2                                       8:2    0   512M  0 part  /boot/efi
+└─sda3                                       8:3    0 556.4G  0 part  
+  ├─pve-swap                               253:0    0     8G  0 lvm   [SWAP]
+  ├─pve-root                               253:1    0    96G  0 lvm   /
+  ├─pve-data_tmeta                         253:2    0   4.4G  0 lvm   
+  │ └─pve-data-tpool                       253:15   0 427.7G  0 lvm   
+  │   ├─pve-data                           253:16   0 427.7G  1 lvm   
+  │   └─pve-vm--102--disk--0               253:17   0    20G  0 lvm   
+  └─pve-data_tdata                         253:3    0 427.7G  0 lvm   
+    └─pve-data-tpool                       253:15   0 427.7G  0 lvm   
+      ├─pve-data                           253:16   0 427.7G  1 lvm   
+      └─pve-vm--102--disk--0               253:17   0    20G  0 lvm   
+sdb                                          8:16   0   3.9T  0 disk  
+└─mpatha                                   253:18   0   3.9T  0 mpath 
+  ├─csm--storage01--vol01-vm--101--disk--0 253:4    0    16G  0 lvm   
+  ├─csm--storage01--vol01-vm--106--disk--0 253:5    0    60G  0 lvm   
+  ├─csm--storage01--vol01-vm--104--disk--0 253:6    0    10G  0 lvm   
+  ├─csm--storage01--vol01-vm--100--disk--0 253:7    0     4M  0 lvm   
+  ├─csm--storage01--vol01-vm--100--disk--1 253:8    0   279G  0 lvm   
+  ├─csm--storage01--vol01-vm--100--disk--2 253:9    0   280G  0 lvm   
+  ├─csm--storage01--vol01-vm--100--disk--3 253:10   0  1000G  0 lvm   
+  ├─csm--storage01--vol01-vm--105--disk--0 253:11   0     4M  0 lvm   
+  ├─csm--storage01--vol01-vm--105--disk--1 253:12   0   558G  0 lvm   
+  ├─csm--storage01--vol01-vm--105--disk--2 253:13   0   500G  0 lvm   
+  └─csm--storage01--vol01-vm--109--disk--1 253:14   0   815G  0 lvm   
+sr0                                         11:0    1  1024M  0 rom 
+
+#Now we can see sdb is the multipath so we will change the lvm config so it wont load it
+
+vim /etc/lvm/lvm.conf
+
+Add line filter (a for allow | r for reject)
+filter = [ "a|^/dev/sda|", "a|^/dev/mapper/*|", "r|^/dev/sdb|" ]
+
+
+#Reboot
