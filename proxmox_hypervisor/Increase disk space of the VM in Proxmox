@@ -18,8 +18,12 @@ fdisk /dev/sda
 -->Using an existing partition and resizing it (b)
 
 a)
+#update/inform kernel about partition table changes
+partprobe
+
 #Check the new filesystem partition and remember the device name 
-fdisk -l /dev/sda     or lsblk 
+lsblk
+fdisk -l /dev/sda 
 
 #Create physical volume, ? = number                           
 pvcreate /dev/sda? 
