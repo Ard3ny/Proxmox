@@ -1,0 +1,73 @@
+Proxmox Cloud-init templates quick short guide (full guide https://thetechcorner.sk/?p=2005)
+
+#Create VM and turn it into template
+#for debian 11
+
+#download image
+wget https://cloud.debian.org/images/cloud/bullseye/daily/latest/debian-11-genericcloud-amd64-daily.qcow2
+
+#Create empty VM shell in proxmox with VirtIO bridge
+qm create 7000 --memory 1024 --core 1 --name debian-cloud --net0 virtio,bridge=vmbr0
+
+#one time install tool for modifying/adding packages to the disk
+#run on proxmox node
+apt install libguestfs-tools
+
+#add qemu-tool package (or any desired package)
+virt-customize -a debian-11-genericcloud-amd64.qcow2 --install qemu-guest-agent
+
+#enable the agent
+qm set 7000 --agent 1,fstrim_cloned_disks=1
+
+#Import the downloaded Debian disk to local-lvm storage (or whatever the storage are you using on proxmox)
+qm importdisk 7000 debian-11-genericcloud-amd64.qcow2 local-lvm
+
+#Attach the new disk to the VM as a scsi drive on the scsi controller
+qm set 7000 --scsihw virtio-scsi-pci --scsi0 local-lvm:vm-7000-disk-0
+
+#Add cloud-init CD-ROM drive, which will be used to pass the Cloud-Init data to the VM
+qm set 7000 --ide2 local-lvm:cloudinit
+
+#set the boot parameter to order=scsi0 to restrict BIOS to boot from this disk only
+qm set 7000 --boot c --bootdisk scsi0
+
+#add serial port (necesarry according to proxmox documentation, but i think optional)
+qm set 7000 --serial0 socket --vga serial0
+
+#configure username,passwd,DNS,IP,gateway (can be done before or after clone)
+
+#user with sudo privilages / password
+qm set 7000 --ciuser=root --cipassword=YourPassoword
+
+#you need to specify the path to the key, in my case I've my public key already in authorized_keys file on the proxmox node so I can use that, but your case may differ
+qm set 7000 --sshkey ~/.ssh/authorized_keys
+
+#my IP address and gateway, so your case will almost certainly differ
+qm set 7000 --ipconfig0 ip=192.168.100.100/24,gw=192.168.100.1
+
+#google and cloud flare DNS 
+qm set 7000 --nameserver="1.1.1.1 8.8.8.8" 
+
+
+#Turn Vm into template
+qm template 7000
+
+#Clone VM from a template
+#full clone/linked clone (you choose depending on your use case, usually for small deploy full clone and linked for big deployment (VPS provider...))
+#--full for full clone or non for linked
+qm clone 7000 101 --name sauron --full
+qm clone 7000 101 --name sauron
+
+#Configure the IP it will use or keep the default one we used
+qm set 101 --ipconfig0 ip=192.168.100.100/24,gw=192.168.100.1
+
+#Resize the disk 
+qm resize 101 scsi0 +20G
+
+#Turn the VM on
+qm start 101
+
+
+#Done, you can ssh with the keys now
+
+
