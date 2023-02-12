@@ -1,0 +1,32 @@
+Hi,
+I was thinking about some fun project to do and it come to my mind of an idea of using Proxmox VE as VPS provider. I know this was done many times before and there are many VPS providers that do it, but it seems like fun project to have on CV, so I want to try as well.
+Let's ignore the front end side of things and focus on the backend.
+What do you think is going to be the best approach to do this?
+KVM/QEMU or LXC? 
+Option 1 Fresh KVM cloud init install with packer provisioning: With cloud init images, i can just change variables like (ssh keys, hostname, CPU core number, RAM...) depending on API request aka customer request.    
+          Pros: -Advantage to this would be that I can always pull the latest image (https://cloud- images.ubuntu.com/) without running any update and then just customize all of it with CLI.
+          Cons: - Always creating new VM might be a bit bad for performance. 
+                    -Also KVM/QEMU takes more resources than LXC
+                    -time consuming 
+
+Option 2 Cloning KVM cloud init template and provision with packer: Same as the first step but, i wont use new deploy but just clone template and change variables like SSH keys, cpu core count.. 
+            Pros: -faster deploy than option 1. 
+            cons: -Again KVM/QEMU takes more resources than LXC 
+                      -now I need to create a script of some sort to weekly update this template.
+
+Option 3 Fresh LXC install: 
+
+            Pros:
+            Cons:
+
+Option 4 Cloning LXC containers:
+
+            Pros: -faster deploy
+            Cons: -again some script for weekly updates
+
+
+
+
+
+option 5?
+Deploying Machines with MaaS and Packer - Metal as a Service + Hashicorp Packer Tutorial
