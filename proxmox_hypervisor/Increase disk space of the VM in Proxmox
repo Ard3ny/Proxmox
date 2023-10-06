@@ -14,8 +14,8 @@ lsblk
 #Format the new space (n,p,defaults,w)
 fdisk /dev/sda                        
 
--->Using new partition and extending VG -volume group (a)
--->Using an existing partition and resizing it (b)
+ (a)-->Using new partition and extending VG -volume group
+ (b)-->Using an existing partition and resizing it 
 
 a)
 #update/inform kernel about partition table changes
@@ -44,7 +44,41 @@ lvextend -r -L +10G /dev/mapper/logical_volume_name
 #or extend and resize all in % 
 lvextend -r -l +100%FREE /dev/mapper/logical_volume_name
 
-b) (to be continuted) 
+
+----------------------------------
+b)
+#in this example we will resize second disk (/dev/sdb)
+Increment
+Reboot
+
+
+lsblk
+-Disk sdb should be larger
+
+#list partitions and decide which one you want to extend 
+fdisk -l /dev/sdb
+# Look for ones ending with LVM:
+#/dev/sdb1 ... LVM 
+
+
+#Resize partition 
+parted /dev/sdb
+resizepart 1 100%
+quit
+
+#add new space to PV
+pvresize /dev/sdb1
+
+
+pvdisplay
+#you should now see fully resized pv 
+
+
+#Add new space to LV 
+lvextend -r -l +100%FREE /dev/mapper/logical_volume_name
+
+#Should be done, check if you got all the space 
+lsblk 
 
 
 
